@@ -34,12 +34,13 @@ places = {
 }
 
 
-for text, (pl_id, max_people) in places.items():
+from aiogram import F
 
-    @router.message(F.text == text)
-    async def handle_place(message: Message, pl_id=pl_id, max_people=max_people):
-        await choose_place(message, pl_id, max_people)
-
+@router.message(F.text.in_(places.keys()))
+async def handle_place(message: Message):
+    text = message.text
+    pl_id, max_people = places[text]
+    await choose_place(message, pl_id, max_people)
 
 @router.message(Command('timetable_text'))
 async def timetable_text(message: Message):
