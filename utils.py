@@ -10,38 +10,45 @@ from database import Session
 from models import Users
 
 
-async def choose_place(message: Message, pl_id: int, max_people=2):
+async def choose_place(message: Message, pl_id: int, max_people=2) -> None:
+    print("choose_place вызван")
 
     if datetime.now().weekday() == 4:
-        await message.answer("В день дежурства запись закрыта")
+        await message.answer('В день дежурства запись не осуществляется (до 3 ночи)')
         return
 
     with Session() as session:
 
+        # Проверяем что пользователь есть
         user = session.execute(
-            select(Users).where(Users.tg_id == str(message.from_user.id))
+            select(Users).where(
+                Users.tg_id == str(message.from_user.id)
+            )
         ).scalar()
 
-        if not user:
-            await message.answer("Вы не зарегистрированы")
+        if user is None:
+            await message.answer('Вы не являетесь частью класса')
             return
 
-        count = session.execute(
+        # Проверяем не записан ли уже
+        if user.place_id is not None:
+            await message.answer('Вы не можете дежурить в двух местах')
+            return
+
+        # Проверяем занятость места
+        busy_count = session.execute(
             select(Users).where(Users.place_id == pl_id)
         ).scalars().all()
 
-        if len(count) >= max_people:
-            await message.answer("Это место уже занято")
+        if len(busy_count) >= max_people:
+            await message.answer('Это место уже занято')
             return
 
-        session.execute(
-            update(Users)
-            .where(Users.tg_id == str(message.from_user.id))
-            .values(place_id=pl_id)
-        )
+        # Записываем
+        user.place_id = pl_id
         session.commit()
 
-        await message.answer("Вы записаны")
+        await message.answer('Вы записаны ✅')
 
 
 def create_timetable(pl_id: int):
