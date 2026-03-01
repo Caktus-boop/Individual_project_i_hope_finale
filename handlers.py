@@ -43,10 +43,31 @@ for text, (pl_id, max_people) in places.items():
 
 @router.message(Command('timetable_text'))
 async def timetable_text(message: Message):
-    result = ""
-    for i in range(1, 13):
-        result += f"{i}: {create_timetable(i)}\n"
-    await message.answer(result)
+
+    text = (
+        "📋 <b>РАСПИСАНИЕ ДЕЖУРСТВА</b>\n\n"
+
+        "🍽 <b>СТОЛОВАЯ:</b>\n" + create_timetable(1) + "\n\n"
+        "🚪 <b>ВХОД:</b>\n" + create_timetable(2) + "\n\n"
+        "🏀 <b>СПОРТЗАЛ:</b>\n" + create_timetable(3) + "\n\n"
+
+        "🏢 <b>2 ЭТАЖ:</b>\n"
+        "Крыло: " + create_timetable(4) + "\n"
+        "Рекреация: " + create_timetable(5) + "\n"
+        "Крыло: " + create_timetable(6) + "\n\n"
+
+        "🏢 <b>3 ЭТАЖ:</b>\n"
+        "Крыло: " + create_timetable(7) + "\n"
+        "Рекреация: " + create_timetable(8) + "\n"
+        "Крыло: " + create_timetable(9) + "\n\n"
+
+        "🏢 <b>4 ЭТАЖ:</b>\n"
+        "Крыло: " + create_timetable(10) + "\n"
+        "Рекреация: " + create_timetable(11) + "\n"
+        "Крыло: " + create_timetable(12)
+    )
+
+    await message.answer(text, parse_mode="HTML")
 
 
 @router.message(Command('timetable_image'))
