@@ -2,3 +2,5 @@ aiogram
 sqlalchemy
 psycopg2-binary
 matplotlib
+fastapi
+uvicorn
