@@ -93,9 +93,11 @@ async def start_bot():
     await dp.start_polling(bot)
 
 
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.create_task(start_bot())
+@app.on_event("startup")
+async def on_startup():
+    asyncio.create_task(start_bot())
 
+
+if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
