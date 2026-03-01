@@ -7,25 +7,32 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand
 from sqlalchemy import update, select
 
+from fastapi import FastAPI
+import uvicorn
+
 from handlers import router
 from database import Session, engine
 from models import Users, Base
 
 logging.basicConfig(level=logging.INFO)
 
-# Создание таблиц
 Base.metadata.create_all(engine)
+
+app = FastAPI()
+
+
+@app.get("/")
+async def root():
+    return {"status": "bot is running"}
 
 
 async def scheduler():
     while True:
         now = datetime.now()
 
-        # Четверг 21:00
         if now.weekday() == 3 and now.hour == 21 and now.minute == 0:
             await random_place()
 
-        # Суббота 00:00
         if now.weekday() == 5 and now.hour == 0 and now.minute == 0:
             await clear_timetable()
 
@@ -70,7 +77,7 @@ async def random_place():
                 session.commit()
 
 
-async def main():
+async def start_bot():
     bot = Bot(token=os.getenv("BOT_TOKEN"))
     dp = Dispatcher()
     dp.include_router(router)
@@ -87,4 +94,8 @@ async def main():
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    loop.create_task(start_bot())
+
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
