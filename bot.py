@@ -18,12 +18,6 @@ logging.basicConfig(level=logging.INFO)
 
 Base.metadata.create_all(engine)
 
-# Пересоздаём таблицы чтобы убрать старый FK
-Base.metadata.drop_all(engine)
-Base.metadata.create_all(engine)
-
-seed_students()
-
 from sqlalchemy import select
 
 def seed_students():
