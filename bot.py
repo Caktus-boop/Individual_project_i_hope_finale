@@ -83,7 +83,7 @@ async def scheduler():
     while True:
         now = datetime.now()
 
-        if now.weekday() == 3 and now.hour == 21 and now.minute == 0:
+        if now.weekday() == 1 and now.hour == 0 and now.minute == 0:
             await random_place()
 
         if now.weekday() == 5 and now.hour == 0 and now.minute == 0:
@@ -99,35 +99,57 @@ async def clear_timetable():
 
 
 async def random_place():
-    from random import choice
+    from random import shuffle
+
+    EXCLUDED_IDS = {"1377739047"}  # Черников Денис — всегда без места
 
     with Session() as session:
         users = session.execute(
             select(Users).where(Users.place_id == None)
         ).scalars().all()
 
-        places = list(range(1, 13))
+        # Отделяем исключённых
+        excluded = [u for u in users if u.tg_id in EXCLUDED_IDS]
+        to_assign = [u for u in users if u.tg_id not in EXCLUDED_IDS]
 
-        for user in users:
-            rand_place = choice(places)
+        # Перемешиваем список учеников
+        shuffle(to_assign)
 
+        # Лимиты мест
+        place_limits = {
+            1: 4, 2: 3, 3: 2, 4: 2, 5: 2, 6: 2,
+            7: 2, 8: 2, 9: 2, 10: 2, 11: 2, 12: 2
+        }
+
+        # Считаем уже занятые места
+        place_counts = {}
+        for pl_id, limit in place_limits.items():
             count = session.execute(
-                select(Users).where(Users.place_id == rand_place)
+                select(Users).where(Users.place_id == pl_id)
             ).scalars().all()
+            place_counts[pl_id] = len(count)
 
-            max_people = 2
-            if rand_place == 2:
-                max_people = 3
-            if rand_place == 1:
-                max_people = 4
+        # Список доступных мест
+        available_places = [
+            pl_id for pl_id, limit in place_limits.items()
+            if place_counts[pl_id] < limit
+        ]
 
-            if len(count) < max_people:
-                session.execute(
-                    update(Users)
-                    .where(Users.id == user.id)
-                    .values(place_id=rand_place)
-                )
-                session.commit()
+        # Распределяем по очереди
+        for user in to_assign:
+            if not available_places:
+                break
+            pl_id = available_places[0]
+            session.execute(
+                update(Users)
+                .where(Users.id == user.id)
+                .values(place_id=pl_id)
+            )
+            place_counts[pl_id] += 1
+            if place_counts[pl_id] >= place_limits[pl_id]:
+                available_places.pop(0)
+
+        session.commit()
 
 
 async def start_bot():
