@@ -90,7 +90,7 @@ async def scheduler():
             await random_place()
             last_ran[key_random] = True
 
-        if now.weekday() == 1 and now.hour == 20 and now.minute >= 2 and key_clear not in last_ran:
+        if now.weekday() == 4 and now.hour == 21 and now.minute >= 59 and key_clear not in last_ran:
             await clear_timetable()
             last_ran[key_clear] = True
 
