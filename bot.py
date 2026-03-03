@@ -22,7 +22,6 @@ from sqlalchemy import select
 
 def seed_students():
     students = [
-        ("1398362563", "Маришка"),
       ("5274553435", "Головашов Александр"),
       ("263585469", "Захарова Олеся"),
       ("5272462695", "Ребдев Владимир"),
@@ -165,7 +164,13 @@ async def start_bot():
     ])
 
     asyncio.create_task(scheduler())
-    await dp.start_polling(bot)
+
+    while True:
+        try:
+            await dp.start_polling(bot)
+        except Exception as e:
+            logging.warning(f"Polling упал: {e}, перезапускаем через 5 секунд...")
+            await asyncio.sleep(5)
 
 
 @app.on_event("startup")
