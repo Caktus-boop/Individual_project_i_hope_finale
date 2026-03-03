@@ -50,7 +50,7 @@ def seed_students():
       ("1963703320", "Харьковский Ян"),
       ("5129101608", "Крамер Захар"),
       ("917219738", "Нейлис Алина"),
-      ("5513999339", "Ариян Мария"),
+      ("5513999339", "Ариян Марина"),
       ("1675113168", "Семенов Лёша"),
       ("808056745", "Власова Юля"),
       ("1367290236", "Гришина Настя")
@@ -86,11 +86,11 @@ async def scheduler():
         key_clear = f"clear_{now.weekday()}_{now.hour}"
         key_random = f"random_{now.weekday()}_{now.hour}"
 
-        if now.weekday() == 1 and now.hour == 19 and now.minute >= 55 and key_random not in last_ran:
+        if now.weekday() == 3 and now.hour == 21 and now.minute >= 59 and key_random not in last_ran:
             await random_place()
             last_ran[key_random] = True
 
-        if now.weekday() == 1 and now.hour == 19 and now.minute >= 50 and key_clear not in last_ran:
+        if now.weekday() == 1 and now.hour == 20 and now.minute >= 2 and key_clear not in last_ran:
             await clear_timetable()
             last_ran[key_clear] = True
 
