@@ -82,10 +82,10 @@ async def scheduler():
     while True:
         now = datetime.now()
 
-        if now.weekday() == 1 and now.hour == 22 and now.minute == 2:
+        if now.weekday() == 1 and now.hour == 22 and now.minute == 15:
             await random_place()
 
-        if now.weekday() == 1 and now.hour == 22 and now.minute == 0:
+        if now.weekday() == 1 and now.hour == 22 and now.minute == 10:
             await clear_timetable()
 
         await asyncio.sleep(60)
