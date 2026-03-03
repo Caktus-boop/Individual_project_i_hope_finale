@@ -97,9 +97,11 @@ async def scheduler():
 
 
 async def clear_timetable():
+    logging.info("clear_timetable вызвана")
     with Session() as session:
         session.execute(update(Users).values(place_id=None))
         session.commit()
+    logging.info("clear_timetable выполнена успешно")
 
 
 async def random_place():
