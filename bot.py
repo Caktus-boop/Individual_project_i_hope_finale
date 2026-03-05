@@ -182,11 +182,11 @@ async def start_bot():
     asyncio.create_task(scheduler())
 
     while True:
-        try:
-            await dp.start_polling(bot)
-        except Exception as e:
-            logging.warning(f"Polling упал: {e}, перезапускаем через 5 секунд...")
-            await asyncio.sleep(5)
+    try:
+        await dp.start_polling(bot)
+    except Exception as e:
+        logging.warning(f"Polling упал: {type(e).__name__}: {e}, перезапускаем через 5 секунд...")
+        await asyncio.sleep(5)
 
 
 @app.on_event("startup")
