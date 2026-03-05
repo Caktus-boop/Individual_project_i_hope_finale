@@ -2,6 +2,7 @@ import asyncio
 import os
 import logging
 from datetime import datetime
+import aiohttp
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand
@@ -82,15 +83,22 @@ async def scheduler():
     last_ran = {}
     while True:
         now = datetime.now()
-        logging.info(f"Scheduler tick: weekday={now.weekday()}, hour={now.hour}, minute={now.minute}")
+
+        # Самопинг чтобы не засыпать
+        try:
+            async with aiohttp.ClientSession() as client:
+                await client.get("https://duty-bot-ig46.onrender.com/")
+        except Exception:
+            pass
+
         key_clear = f"clear_{now.weekday()}_{now.hour}"
         key_random = f"random_{now.weekday()}_{now.hour}"
 
-        if now.weekday() == 3 and now.hour == 21 and now.minute >= 59 and key_random not in last_ran:
+        if now.weekday() == 3 and now.hour == 23 and now.minute >= 59 and key_random not in last_ran:
             await random_place()
             last_ran[key_random] = True
 
-        if now.weekday() == 4 and now.hour == 21 and now.minute >= 59 and key_clear not in last_ran:
+        if now.weekday() == 4 and now.hour == 23 and now.minute >= 59 and key_clear not in last_ran:
             await clear_timetable()
             last_ran[key_clear] = True
 
