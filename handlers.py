@@ -1,5 +1,5 @@
 from aiogram import F, Router
-from aiogram.types import Message, FSInputFile, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import Message, FSInputFile, CallbackQuery
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -9,11 +9,10 @@ from utils import choose_place, create_timetable, create_table_separate_rows
 router = Router()
 
 ADMIN_IDS = {"1377739047", "263585469"}  # Черников Денис, Захарова Олеся
+DENIS_ID = "1377739047"
 
 class AdminStates(StatesGroup):
     waiting_name_delete = State()
-    waiting_place = State()
-    waiting_name_add = State()
 
 class UserStates(StatesGroup):
     choosing_place = State()
@@ -32,13 +31,6 @@ places = {
     "Рекреация(4)": (11, 2),
     "Правое крыло(4)": (12, 2),
 }
-
-admin_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [
-        InlineKeyboardButton(text="➕ Добавить", callback_data="admin_add"),
-        InlineKeyboardButton(text="➖ Удалить", callback_data="admin_delete"),
-    ]
-])
 
 
 @router.message(CommandStart())
@@ -85,7 +77,6 @@ async def timetable_text(message: Message):
         "Рекреация: " + create_timetable(11) + "\n"
         "Правое Крыло: " + create_timetable(12)
     )
-    
     await message.answer(text, parse_mode="HTML")
 
 
@@ -96,15 +87,14 @@ async def timetable_image(message: Message):
     await message.answer_photo(photo)
 
 
-@router.message(Command('admin'))
-async def admin_panel(message: Message):
+@router.message(Command('delete'))
+async def admin_delete_start(message: Message, state: FSMContext):
     if str(message.from_user.id) not in ADMIN_IDS:
         await message.answer("У вас нет доступа")
         return
-    await message.answer("Панель администратора:", reply_markup=admin_keyboard)
+    await message.answer("Введите имя и фамилию ученика которого хотите снять с дежурства:")
+    await state.set_state(AdminStates.waiting_name_delete)
 
-
-DENIS_ID = "1377739047"
 
 @router.message(AdminStates.waiting_name_delete)
 async def admin_delete_confirm(message: Message, state: FSMContext):
@@ -137,62 +127,5 @@ async def admin_delete_confirm(message: Message, state: FSMContext):
                     f"Ученик: {name}",
                     parse_mode="HTML"
                 )
-
-    await state.clear()
-
-
-@router.message(AdminStates.waiting_name_add)
-async def admin_add_confirm(message: Message, state: FSMContext):
-    from database import Session
-    from models import Users
-    from sqlalchemy import select, update
-
-    name = message.text.strip()
-    admin_name = message.from_user.full_name
-    data = await state.get_data()
-    place_text = data.get("place")
-    pl_id, max_people = places[place_text]
-
-    with Session() as session:
-        user = session.execute(
-            select(Users).where(Users.name == name)
-        ).scalar()
-
-        if user is None:
-            await message.answer("Такого человека в базе нет, ты точно правильно написал(-а)?")
-            await state.clear()
-            return
-
-        if user.place_id is not None:
-            await message.answer(f"{name} уже записан(а) на дежурство")
-            await state.clear()
-            return
-
-        busy_count = session.execute(
-            select(Users).where(Users.place_id == pl_id)
-        ).scalars().all()
-
-        if len(busy_count) >= max_people:
-            await message.answer("Это место уже занято")
-            await state.clear()
-            return
-
-        session.execute(
-            update(Users)
-            .where(Users.name == name)
-            .values(place_id=pl_id)
-        )
-        session.commit()
-        await message.answer(f"{name} записан(а) на {place_text} ✅")
-        if str(message.from_user.id) != DENIS_ID:
-            await message.bot.send_message(
-                DENIS_ID,
-                f"🔔 <b>Действие админа</b>\n"
-                f"Администратор: {admin_name}\n"
-                f"Действие: записал(а) на дежурство\n"
-                f"Ученик: {name}\n"
-                f"Место: {place_text}",
-                parse_mode="HTML"
-            )
 
     await state.clear()
