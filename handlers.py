@@ -53,19 +53,19 @@ async def timetable_text(message: Message):
         "🏀 <b>СПОРТЗАЛ:</b>\n" + create_timetable(3) + "\n\n"
 
         "🏢 <b>2 ЭТАЖ:</b>\n"
-        "Крыло: " + create_timetable(4) + "\n"
+        "Левое Крыло: " + create_timetable(4) + "\n"
         "Рекреация: " + create_timetable(5) + "\n"
-        "Крыло: " + create_timetable(6) + "\n\n"
+        "Правое Крыло: " + create_timetable(6) + "\n\n"
 
         "🏢 <b>3 ЭТАЖ:</b>\n"
-        "Крыло: " + create_timetable(7) + "\n"
+        "Левое Крыло: " + create_timetable(7) + "\n"
         "Рекреация: " + create_timetable(8) + "\n"
-        "Крыло: " + create_timetable(9) + "\n\n"
+        "Правое Крыло: " + create_timetable(9) + "\n\n"
 
         "🏢 <b>4 ЭТАЖ:</b>\n"
-        "Крыло: " + create_timetable(10) + "\n"
+        "Левое Крыло: " + create_timetable(10) + "\n"
         "Рекреация: " + create_timetable(11) + "\n"
-        "Крыло: " + create_timetable(12)
+        "Правое Крыло: " + create_timetable(12)
     )
 
     await message.answer(text, parse_mode="HTML")
@@ -154,12 +154,46 @@ async def admin_add_place(message: Message, state: FSMContext):
 async def admin_add_confirm(message: Message, state: FSMContext):
     from database import Session
     from models import Users
-    from sqlalchemy import select
+    from sqlalchemy import select, update
 
     name = message.text.strip()
     data = await state.get_data()
     place_text = data.get("place")
     pl_id, max_people = places[place_text]
+
+    with Session() as session:
+        user = session.execute(
+            select(Users).where(Users.name == name)
+        ).scalar()
+
+        if user is None:
+            await message.answer("Такого человека в базе нет, ты точно правильно написал(-а)?")
+            await state.clear()
+            return
+
+        if user.place_id is not None:
+            await message.answer(f"{name} уже записан(а) на дежурство")
+            await state.clear()
+            return
+
+        busy_count = session.execute(
+            select(Users).where(Users.place_id == pl_id)
+        ).scalars().all()
+
+        if len(busy_count) >= max_people:
+            await message.answer("Это место уже занято")
+            await state.clear()
+            return
+
+        session.execute(
+            update(Users)
+            .where(Users.name == name)
+            .values(place_id=pl_id)
+        )
+        session.commit()
+        await message.answer(f"{name} записан(а) на {place_text} ✅")
+
+    await state.clear()
 
     with Session() as session:
         user = session.execute(
