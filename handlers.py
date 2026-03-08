@@ -84,6 +84,8 @@ async def timetable_text(message: Message):
         "Левое Крыло: " + create_timetable(10) + "\n"
         "Рекреация: " + create_timetable(11) + "\n"
         "Правое Крыло: " + create_timetable(12)
+    )
+    
     await message.answer(text, parse_mode="HTML")
 
 
