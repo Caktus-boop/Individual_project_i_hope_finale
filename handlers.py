@@ -14,8 +14,6 @@ DENIS_ID = "1377739047"
 class AdminStates(StatesGroup):
     waiting_name_delete = State()
 
-class UserStates(StatesGroup):
-    choosing_place = State()
 
 places = {
     "Столовая": (1, 4),
@@ -39,43 +37,35 @@ async def start(message: Message):
 
 
 @router.message(Command('set_place'))
-async def set_place(message: Message, state: FSMContext):
+async def set_place(message: Message):
     await message.answer("Выберите место:", reply_markup=kb.main)
-    await state.set_state(UserStates.choosing_place)
 
-
-@router.message(UserStates.choosing_place, F.text.in_(places.keys()))
-async def handle_place(message: Message, state: FSMContext):
+@router.message(F.text.in_(places.keys()))
+async def handle_place(message: Message):
     text = message.text
     pl_id, max_people = places[text]
     await choose_place(message, pl_id, max_people)
-    await state.clear()
-
-
-@router.message(UserStates.choosing_place)
-async def handle_wrong_place(message: Message):
-    await message.answer("Пожалуйста, выберите место из предложенных кнопок")
 
 
 @router.message(Command('timetable_text'))
 async def timetable_text(message: Message):
     text = (
-        "<b>РАСПИСАНИЕ ДЕЖУРСТВА</b>\n\n"
-        "<b>СТОЛОВАЯ:</b>\n" + create_timetable(1) + "\n\n"
-        "<b>ВХОД:</b>\n" + create_timetable(2) + "\n\n"
-        "<b>СПОРТЗАЛ:</b>\n" + create_timetable(3) + "\n\n"
-        "<b>2 ЭТАЖ:</b>\n"
-        "Левое Крыло: " + create_timetable(4) + "\n"
+        "📋 <b>РАСПИСАНИЕ ДЕЖУРСТВА</b>\n\n"
+        "🍽 <b>СТОЛОВАЯ:</b>\n" + create_timetable(1) + "\n\n"
+        "🚪 <b>ВХОД:</b>\n" + create_timetable(2) + "\n\n"
+        "🏀 <b>СПОРТЗАЛ:</b>\n" + create_timetable(3) + "\n\n"
+        "🏢 <b>2 ЭТАЖ:</b>\n"
+        "Левое крыло: " + create_timetable(4) + "\n"
         "Рекреация: " + create_timetable(5) + "\n"
-        "Правое Крыло: " + create_timetable(6) + "\n\n"
-        "<b>3 ЭТАЖ:</b>\n"
-        "Левое Крыло: " + create_timetable(7) + "\n"
+        "Правое крыло: " + create_timetable(6) + "\n\n"
+        "🏢 <b>3 ЭТАЖ:</b>\n"
+        "Левое крыло: " + create_timetable(7) + "\n"
         "Рекреация: " + create_timetable(8) + "\n"
-        "Правое Крыло: " + create_timetable(9) + "\n\n"
-        "<b>4 ЭТАЖ:</b>\n"
-        "Левое Крыло: " + create_timetable(10) + "\n"
+        "Правое крыло: " + create_timetable(9) + "\n\n"
+        "🏢 <b>4 ЭТАЖ:</b>\n"
+        "Левое крыло: " + create_timetable(10) + "\n"
         "Рекреация: " + create_timetable(11) + "\n"
-        "Правое Крыло: " + create_timetable(12)
+        "Правое крыло: " + create_timetable(12)
     )
     await message.answer(text, parse_mode="HTML")
 
