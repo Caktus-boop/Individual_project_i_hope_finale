@@ -94,7 +94,7 @@ async def scheduler():
         key_clear = f"clear_{now.weekday()}_{now.hour}"
         key_random = f"random_{now.weekday()}_{now.hour}"
 
-        if now.weekday() == 3 and now.hour == 20 and now.minute >= 59 and key_random not in last_ran:
+        if now.weekday() == 3 and now.hour == 17 and now.minute >= 59 and key_random not in last_ran:
             await random_place()
             last_ran[key_random] = True
 
@@ -116,7 +116,7 @@ async def clear_timetable():
 async def random_place():
     from random import shuffle
 
-    EXCLUDED_IDS = {"1377739047"}  # Черников Денис — всегда без места
+    EXCLUDED_IDS = {"1377739047","1643399283", "5127186542", "1963703320"}  # Черников Денис — всегда без места (Временно больные, потом реализую) 
 
     with Session() as session:
         users = session.execute(
