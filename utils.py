@@ -13,10 +13,6 @@ from models import Users
 async def choose_place(message: Message, pl_id: int, max_people=2) -> None:
     print("choose_place вызван")
 
-    if datetime.now().weekday() == 4:
-        await message.answer('В день дежурства запись не осуществляется (до 3 ночи)')
-        return
-
     with Session() as session:
 
         # Проверяем что пользователь есть
