@@ -94,7 +94,7 @@ async def scheduler():
         key_clear = f"clear_{now.weekday()}_{now.hour}"
         key_random = f"random_{now.weekday()}_{now.hour}"
 
-        if now.weekday() == 3 and now.hour == 17 and now.minute >= 59 and key_random not in last_ran:
+        if now.weekday() == 3 and now.hour == 17 and now.minute >= 37 and key_random not in last_ran:
             await random_place()
             last_ran[key_random] = True
 
