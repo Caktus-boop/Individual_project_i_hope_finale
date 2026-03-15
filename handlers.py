@@ -119,3 +119,86 @@ async def admin_delete_confirm(message: Message, state: FSMContext):
                 )
 
     await state.clear()
+
+class AddStudentStates(StatesGroup):
+    waiting_place = State()
+    waiting_name = State()
+
+
+@router.message(Command('add_student'))
+async def add_student_start(message: Message, state: FSMContext):
+    if str(message.from_user.id) not in ADMIN_IDS:
+        await message.answer("У вас нет прав")
+        return
+    await message.answer("Выберите место:", reply_markup=kb.main)
+    await state.set_state(AddStudentStates.waiting_place)
+
+
+@router.message(AddStudentStates.waiting_place, F.text.in_(places.keys()))
+async def add_student_place(message: Message, state: FSMContext):
+    await state.update_data(place=message.text)
+    await message.answer("Введите имя и фамилию ученика:")
+    await state.set_state(AddStudentStates.waiting_name)
+
+
+@router.message(AddStudentStates.waiting_place)
+async def add_student_wrong_place(message: Message):
+    await message.answer("Пожалуйста, выберите место из предложенных кнопок")
+
+
+@router.message(AddStudentStates.waiting_name)
+async def add_student_confirm(message: Message, state: FSMContext):
+    from database import Session
+    from models import Users
+    from sqlalchemy import select, update
+
+    name = message.text.strip()
+    admin_name = message.from_user.full_name
+    data = await state.get_data()
+    place_text = data.get("place")
+    pl_id, max_people = places[place_text]
+
+    with Session() as session:
+        user = session.execute(
+            select(Users).where(Users.name == name)
+        ).scalar()
+
+        if user is None:
+            await message.answer("Такого человека в базе нет, ты точно правильно написал(-а)?")
+            await state.clear()
+            return
+
+        if user.place_id is not None:
+            await message.answer(f"{name} уже записан(а) на дежурство")
+            await state.clear()
+            return
+
+        busy_count = session.execute(
+            select(Users).where(Users.place_id == pl_id)
+        ).scalars().all()
+
+        if len(busy_count) >= max_people:
+            await message.answer("Это место уже занято")
+            await state.clear()
+            return
+
+        session.execute(
+            update(Users)
+            .where(Users.name == name)
+            .values(place_id=pl_id)
+        )
+        session.commit()
+        await message.answer(f"{name} записан(а) на {place_text} ✅")
+
+        if str(message.from_user.id) != DENIS_ID:
+            await message.bot.send_message(
+                DENIS_ID,
+                f"🔔 <b>Действие админа</b>\n"
+                f"Администратор: {admin_name}\n"
+                f"Действие: записал(а) на дежурство\n"
+                f"Ученик: {name}\n"
+                f"Место: {place_text}",
+                parse_mode="HTML"
+            )
+
+    await state.clear()
