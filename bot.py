@@ -18,24 +18,6 @@ from models import Users, Base
 logging.basicConfig(level=logging.INFO)
 
 Base.metadata.create_all(engine)
-with Session() as session:
-    from sqlalchemy import delete as sql_delete
-
-    # Удаляем Маришку
-    marishka = session.execute(
-        select(Users).where(Users.name == "Маришка")
-    ).scalar()
-    if marishka:
-        session.delete(marishka)
-
-    # Переименовываем Ариян Марию в Ариян Марину
-    aryan = session.execute(
-        select(Users).where(Users.name == "Ариян Мария")
-    ).scalar()
-    if aryan:
-        aryan.name = "Ариян Марина"
-
-    session.commit()
 
 from sqlalchemy import select
 
