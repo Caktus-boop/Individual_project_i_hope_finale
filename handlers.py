@@ -40,13 +40,6 @@ async def start(message: Message):
 async def set_place(message: Message):
     await message.answer("Выберите место:", reply_markup=kb.main)
 
-@router.message(F.text.in_(places.keys()))
-async def handle_place(message: Message):
-    text = message.text
-    pl_id, max_people = places[text]
-    await choose_place(message, pl_id, max_people)
-
-
 @router.message(Command('timetable_text'))
 async def timetable_text(message: Message):
     text = (
