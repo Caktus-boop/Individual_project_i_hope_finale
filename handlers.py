@@ -202,3 +202,9 @@ async def add_student_confirm(message: Message, state: FSMContext):
             )
 
     await state.clear()
+
+@router.message(F.text.in_(places.keys()))
+async def handle_place(message: Message):
+    text = message.text
+    pl_id, max_people = places[text]
+    await choose_place(message, pl_id, max_people)
