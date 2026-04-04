@@ -9,3 +9,4 @@ class Users(Base):
     tg_id: Mapped[str]
     name: Mapped[str]
     place_id: Mapped[int | None]
+    is_sick: Mapped[bool] = mapped_column(default=False)
