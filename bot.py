@@ -90,7 +90,7 @@ async def root():
     return {"status": "bot is running"}
 
 
-async def scheduler():
+async def scheduler(bot):
     last_ran = {}
     while True:
         now = datetime.now()
@@ -105,8 +105,8 @@ async def scheduler():
         key_clear = f"clear_{now.weekday()}_{now.hour}"
         key_random = f"random_{now.weekday()}_{now.hour}"
 
-        if now.weekday() == 3 and now.hour == 17 and now.minute >= 37 and key_random not in last_ran:
-            await random_place()
+        if now.weekday() == 3 and now.hour == 17 and now.minute >= 30 and key_random not in last_ran:
+            await random_place(bot)
             last_ran[key_random] = True
 
         if now.weekday() == 4 and now.hour == 20 and now.minute >= 59 and key_clear not in last_ran:
@@ -124,7 +124,7 @@ async def clear_timetable():
     logging.info("clear_timetable выполнена успешно")
 
 
-async def random_place():
+async def random_place(bot=None):
     from random import shuffle
 
     EXCLUDED_IDS = {"1377739047"}  # Черников Денис — всегда без места
@@ -177,6 +177,19 @@ async def random_place():
 
         session.commit()
 
+        hall_users = session.execute(
+            select(Users).where(Users.place_id == 2)
+        ).scalars().all()
+
+        for u in hall_users:
+            try:
+                await bot.send_message(
+                    u.tg_id,
+                    " Ты дежуришь на <b>ВХОДЕ</b> завтра!",
+                    parse_mode="HTML"
+                )
+            except Exception:
+                pass
 
 async def start_bot():
     bot = Bot(token=os.getenv("BOT_TOKEN"))
@@ -190,7 +203,7 @@ async def start_bot():
         BotCommand(command='timetable_image', description='Посмотреть фото')
     ])
 
-    asyncio.create_task(scheduler())
+    asyncio.create_task(scheduler(bot))
 
     while True:
         try:
