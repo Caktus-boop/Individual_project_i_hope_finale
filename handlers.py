@@ -8,7 +8,7 @@ from utils import choose_place, create_timetable, create_table_separate_rows
 
 router = Router()
 
-ADMIN_IDS = {"1377739047", "263585469"}  # Черников Денис, Захарова Олеся
+ADMIN_IDS = {"1377739047", "263585469","1398362563"}  # Черников Денис, Захарова Олеся, Маришка
 DENIS_ID = "1377739047"
 
 class AdminStates(StatesGroup):
@@ -201,7 +201,7 @@ class SickStates(StatesGroup):
     waiting_name_remove = State()
 
 
-@router.message(Command('sick_add'))
+@router.message(Command('add_sick'))
 async def sick_add_start(message: Message, state: FSMContext):
     if str(message.from_user.id) not in ADMIN_IDS:
         await message.answer("У вас нет прав")
@@ -247,7 +247,7 @@ async def sick_add_confirm(message: Message, state: FSMContext):
     await state.clear()
 
 
-@router.message(Command('sick_remove'))
+@router.message(Command('heal'))
 async def sick_remove_start(message: Message, state: FSMContext):
     if str(message.from_user.id) not in ADMIN_IDS:
         await message.answer("У вас нет прав")
@@ -291,6 +291,27 @@ async def sick_remove_confirm(message: Message, state: FSMContext):
                 )
 
     await state.clear()
+
+@router.message(Command('sick_show'))
+async def sick_show(message: Message):
+    if str(message.from_user.id) not in ADMIN_IDS:
+        await message.answer("У вас нет прав")
+        return
+    from database import Session
+    from models import Users
+    from sqlalchemy import select
+
+    with Session() as session:
+        users = session.execute(
+            select(Users).where(Users.is_sick == True)
+        ).scalars().all()
+
+        if not users:
+            await message.answer("Список больных пуст")
+            return
+
+        names = "\n".join([f"• {u.name}" for u in users])
+        await message.answer(f" <b>Список больных:</b>\n{names}", parse_mode="HTML")
 
 @router.message(F.text.in_(places.keys()))
 async def handle_place(message: Message):
