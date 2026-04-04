@@ -196,6 +196,102 @@ async def add_student_confirm(message: Message, state: FSMContext):
 
     await state.clear()
 
+class SickStates(StatesGroup):
+    waiting_name_add = State()
+    waiting_name_remove = State()
+
+
+@router.message(Command('sick_add'))
+async def sick_add_start(message: Message, state: FSMContext):
+    if str(message.from_user.id) not in ADMIN_IDS:
+        await message.answer("У вас нет прав")
+        return
+    await message.answer("Введите имя и фамилию заболевшего:")
+    await state.set_state(SickStates.waiting_name_add)
+
+
+@router.message(SickStates.waiting_name_add)
+async def sick_add_confirm(message: Message, state: FSMContext):
+    from database import Session
+    from models import Users
+    from sqlalchemy import select, update
+
+    name = message.text.strip()
+    admin_name = message.from_user.full_name
+
+    with Session() as session:
+        user = session.execute(
+            select(Users).where(Users.name == name)
+        ).scalar()
+
+        if user is None:
+            await message.answer("Такого человека в базе нет, ты точно правильно написал(-а)?")
+        elif user.is_sick:
+            await message.answer(f"{name} уже в списке больных")
+        else:
+            session.execute(
+                update(Users).where(Users.name == name).values(is_sick=True, place_id=None)
+            )
+            session.commit()
+            await message.answer(f"{name} добавлен(а) в список больных ✅")
+            if str(message.from_user.id) != DENIS_ID:
+                await message.bot.send_message(
+                    DENIS_ID,
+                    f"🔔 <b>Действие админа</b>\n"
+                    f"Администратор: {admin_name}\n"
+                    f"Действие: добавил(а) в список больных\n"
+                    f"Ученик: {name}",
+                    parse_mode="HTML"
+                )
+
+    await state.clear()
+
+
+@router.message(Command('sick_remove'))
+async def sick_remove_start(message: Message, state: FSMContext):
+    if str(message.from_user.id) not in ADMIN_IDS:
+        await message.answer("У вас нет прав")
+        return
+    await message.answer("Введите имя и фамилию выздоровевшего:")
+    await state.set_state(SickStates.waiting_name_remove)
+
+
+@router.message(SickStates.waiting_name_remove)
+async def sick_remove_confirm(message: Message, state: FSMContext):
+    from database import Session
+    from models import Users
+    from sqlalchemy import select, update
+
+    name = message.text.strip()
+    admin_name = message.from_user.full_name
+
+    with Session() as session:
+        user = session.execute(
+            select(Users).where(Users.name == name)
+        ).scalar()
+
+        if user is None:
+            await message.answer("Такого человека в базе нет, ты точно правильно написал(-а)?")
+        elif not user.is_sick:
+            await message.answer(f"{name} и так не в списке больных")
+        else:
+            session.execute(
+                update(Users).where(Users.name == name).values(is_sick=False)
+            )
+            session.commit()
+            await message.answer(f"{name} убран(а) из списка больных ✅")
+            if str(message.from_user.id) != DENIS_ID:
+                await message.bot.send_message(
+                    DENIS_ID,
+                    f"🔔 <b>Действие админа</b>\n"
+                    f"Администратор: {admin_name}\n"
+                    f"Действие: убрал(а) из списка больных\n"
+                    f"Ученик: {name}",
+                    parse_mode="HTML"
+                )
+
+    await state.clear()
+
 @router.message(F.text.in_(places.keys()))
 async def handle_place(message: Message):
     text = message.text
