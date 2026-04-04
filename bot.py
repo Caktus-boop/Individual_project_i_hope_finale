@@ -17,6 +17,14 @@ from models import Users, Base
 
 logging.basicConfig(level=logging.INFO)
 
+from sqlalchemy import text
+
+with engine.connect() as conn:
+    try:
+        conn.execute(text("ALTER TABLE users ADD COLUMN is_sick BOOLEAN DEFAULT FALSE"))
+        conn.commit()
+    except Exception:
+        pass
 Base.metadata.create_all(engine)
 
 from sqlalchemy import select
@@ -116,7 +124,7 @@ async def clear_timetable():
 async def random_place():
     from random import shuffle
 
-    EXCLUDED_IDS = {"1377739047","1643399283", "5127186542", "1963703320"}  # Черников Денис — всегда без места (Временно больные, потом реализую) 
+    EXCLUDED_IDS = {"1377739047"}  # Черников Денис — всегда без места
 
     with Session() as session:
         users = session.execute(
