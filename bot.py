@@ -19,14 +19,17 @@ logging.basicConfig(level=logging.INFO)
 
 from sqlalchemy import text
 
+Base.metadata.create_all(engine)
+
+from sqlalchemy import text
+
 with engine.connect() as conn:
     try:
         conn.execute(text("ALTER TABLE users ADD COLUMN is_sick BOOLEAN DEFAULT FALSE"))
         conn.commit()
     except Exception:
         pass
-Base.metadata.create_all(engine)
-
+        
 from sqlalchemy import select
 
 def seed_students():
