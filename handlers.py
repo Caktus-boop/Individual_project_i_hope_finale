@@ -5,6 +5,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 import keyboards as kb
 from utils import choose_place, create_timetable, create_table_separate_rows
+from database import Session
+from models import Users
+from sqlalchemy import select, update
 
 router = Router()
 
@@ -69,6 +72,52 @@ async def timetable_image(message: Message):
     photo = FSInputFile("table_final.png")
     await message.answer_photo(photo)
 
+@router.message(Command('find'))
+async def find_student(message: Message):
+    from database import Session
+    from models import Users
+    from sqlalchemy import select
+
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        await message.answer("Введите имя и фамилию: /find Иванов Иван")
+        return
+
+    name = args[1].strip()
+    place_names = {
+        1: "Столовая", 2: "Вход", 3: "Спортзал",
+        4: "Левое крыло (2 этаж)", 5: "Рекреация (2 этаж)", 6: "Правое крыло (2 этаж)",
+        7: "Левое крыло (3 этаж)", 8: "Рекреация (3 этаж)", 9: "Правое крыло (3 этаж)",
+        10: "Левое крыло (4 этаж)", 11: "Рекреация (4 этаж)", 12: "Правое крыло (4 этаж)",
+    }
+
+    with Session() as session:
+        user = session.execute(
+            select(Users).where(Users.name == name)
+        ).scalar()
+
+        if user is None:
+            await message.answer("Такого человека в базе нет, ты точно правильно написал(-а)?")
+        elif user.place_id is None:
+            await message.answer(f"{name} нигде не дежурит")
+
+@router.message(Command('lazy_asses'))
+async def lazy_asses(message: Message):
+    if str(message.from_user.id) not in ADMIN_IDS:
+        await message.answer("У вас нет прав")
+        return
+        
+    with Session() as session:
+        users = session.execute(
+            select(Users).where(Users.place_id == None, Users.is_sick == False)
+        ).scalars().all()
+
+        if not users:
+            await message.answer("Все записались! 🎉")
+            return
+
+        names = "\n".join([f"• {u.name}" for u in users])
+        await message.answer(f"😴 <b>Ленивые жопы:</b>\n{names}", parse_mode="HTML")
 
 @router.message(Command('delete'))
 async def admin_delete_start(message: Message, state: FSMContext):
