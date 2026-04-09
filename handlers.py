@@ -100,6 +100,9 @@ async def find_student(message: Message):
             await message.answer("Такого человека в базе нет, ты точно правильно написал(-а)?")
         elif user.place_id is None:
             await message.answer(f"{name} нигде не дежурит")
+        else:
+            place = place_names.get(user.place_id, '')
+            await message.answer(f"{name} дежурит: <b>{place}</b>", parse_mode="HTML")
 
 @router.message(Command('lazy_asses'))
 async def lazy_asses(message: Message):
@@ -109,7 +112,7 @@ async def lazy_asses(message: Message):
         
     with Session() as session:
         users = session.execute(
-            select(Users).where(Users.place_id == None, Users.is_sick == False)
+            select(Users).where(Users.place_id == None)
         ).scalars().all()
 
         if not users:
@@ -130,10 +133,7 @@ async def admin_delete_start(message: Message, state: FSMContext):
 
 @router.message(AdminStates.waiting_name_delete)
 async def admin_delete_confirm(message: Message, state: FSMContext):
-    from database import Session
-    from models import Users
-    from sqlalchemy import select
-
+    
     name = message.text.strip()
     admin_name = message.from_user.full_name
 
@@ -190,10 +190,7 @@ async def add_student_wrong_place(message: Message):
 
 @router.message(AddStudentStates.waiting_name)
 async def add_student_confirm(message: Message, state: FSMContext):
-    from database import Session
-    from models import Users
-    from sqlalchemy import select, update
-
+    
     name = message.text.strip()
     admin_name = message.from_user.full_name
     data = await state.get_data()
@@ -261,10 +258,7 @@ async def sick_add_start(message: Message, state: FSMContext):
 
 @router.message(SickStates.waiting_name_add)
 async def sick_add_confirm(message: Message, state: FSMContext):
-    from database import Session
-    from models import Users
-    from sqlalchemy import select, update
-
+    
     name = message.text.strip()
     admin_name = message.from_user.full_name
 
@@ -307,9 +301,6 @@ async def sick_remove_start(message: Message, state: FSMContext):
 
 @router.message(SickStates.waiting_name_remove)
 async def sick_remove_confirm(message: Message, state: FSMContext):
-    from database import Session
-    from models import Users
-    from sqlalchemy import select, update
 
     name = message.text.strip()
     admin_name = message.from_user.full_name
@@ -346,10 +337,7 @@ async def sick_show(message: Message):
     if str(message.from_user.id) not in ADMIN_IDS:
         await message.answer("У вас нет прав")
         return
-    from database import Session
-    from models import Users
-    from sqlalchemy import select
-
+   
     with Session() as session:
         users = session.execute(
             select(Users).where(Users.is_sick == True)
