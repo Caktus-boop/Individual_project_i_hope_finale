@@ -11,8 +11,6 @@ from models import Users
 
 
 async def choose_place(message: Message, pl_id: int, max_people=2) -> None:
-    print("choose_place вызван")
-
     with Session() as session:
 
         # Проверяем что пользователь есть
@@ -45,7 +43,10 @@ async def choose_place(message: Message, pl_id: int, max_people=2) -> None:
         session.commit()
 
         await message.answer('Вы записаны ✅')
-
+        await message.bot.send_message(
+            "1377739047",
+            f"{user.name} записался(ась)"
+        )
 
 def create_timetable(pl_id: int):
     with Session() as session:
