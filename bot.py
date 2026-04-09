@@ -131,7 +131,7 @@ async def random_place(bot=None):
 
     with Session() as session:
         users = session.execute(
-            select(Users).where(Users.place_id == None)
+            select(Users).where(Users.place_id == None, Users.is_sick == False)
         ).scalars().all()
 
         # Отделяем исключённых
