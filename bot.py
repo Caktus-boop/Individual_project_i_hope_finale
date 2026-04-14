@@ -56,7 +56,7 @@ def seed_students():
       ("1522953852", "Полонейчик Роман"),
       ("5281471578", "Долев Алий"),
       ("2074542737", "Павлов Тимофей"),
-      ("6090119655", "Аксёнова Маргорита"),
+      ("6090119655", "Аксёнова Маргарита"),
       ("1965208888", "Артемьев Михаил"),
       ("898040758", "Чижиков Артём"),
       ("1963703320", "Харьковский Ян"),
@@ -65,8 +65,8 @@ def seed_students():
       ("5513999339", "Ариян Марина"),
       ("1675113168", "Семенов Лёша"),
       ("808056745", "Власова Юля"),
-      ("1367290236", "Гришина Настя")
-        
+      ("1367290236", "Гришина Настя"),
+      ("8721917051", "Сахань Артём")  
     ]
 
     with Session() as session:
@@ -134,20 +134,16 @@ async def random_place(bot=None):
             select(Users).where(Users.place_id == None, Users.is_sick == False)
         ).scalars().all()
 
-        # Отделяем исключённых
         excluded = [u for u in users if u.tg_id in EXCLUDED_IDS]
         to_assign = [u for u in users if u.tg_id not in EXCLUDED_IDS]
 
-        # Перемешиваем список учеников
         shuffle(to_assign)
 
-        # Лимиты мест
         place_limits = {
             1: 4, 2: 3, 3: 2, 4: 2, 5: 2, 6: 2,
             7: 2, 8: 2, 9: 2, 10: 2, 11: 2, 12: 2
         }
 
-        # Считаем уже занятые места
         place_counts = {}
         for pl_id, limit in place_limits.items():
             count = session.execute(
@@ -155,13 +151,11 @@ async def random_place(bot=None):
             ).scalars().all()
             place_counts[pl_id] = len(count)
 
-        # Список доступных мест
         available_places = [
             pl_id for pl_id, limit in place_limits.items()
             if place_counts[pl_id] < limit
         ]
 
-        # Распределяем по очереди
         for user in to_assign:
             if not available_places:
                 break
