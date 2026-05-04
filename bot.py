@@ -66,7 +66,7 @@ def seed_students():
       ("1675113168", "Семенов Лёша"),
       ("808056745", "Власова Юля"),
       ("1367290236", "Гришина Настя"),
-      ("8721917051", "Сахань Артём")  
+      ("6834662089", "Сахань Артём")  
     ]
 
     with Session() as session:
@@ -113,7 +113,7 @@ async def scheduler(bot):
             await clear_timetable()
             last_ran[key_clear] = True
 
-        await asyncio.sleep(55)
+        await asyncio.sleep(45)
 
 
 async def clear_timetable():
