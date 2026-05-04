@@ -8,6 +8,7 @@ from utils import choose_place, create_timetable, create_table_separate_rows
 from database import Session
 from models import Users
 from sqlalchemy import select, update
+from bot import random_place, clear_timetable
 
 router = Router()
 
@@ -350,6 +351,22 @@ async def sick_show(message: Message):
         names = "\n".join([f"• {u.name}" for u in users])
         await message.answer(f" <b>Список больных:</b>\n{names}", parse_mode="HTML")
 
+@router.message(Command('force_random')
+async def force_random(message: Message):
+    if str(message.from_user.id) not in ADMINS_IDS:
+        await message.answer("У вас нет прав")
+        return
+    await random_place()
+    await message.answer("Распределение выполнено ✅")
+
+@router.message(Command('force_clear'))
+async def force_clear(message: Message):
+    if str(message.from_user.id) not in ADMINS_IDS:
+        await message.answer("У вас нет прав")
+        return
+    await clear_timetable()
+    await message.answer("Таблица очищена ✅")
+    
 @router.message(F.text.in_(places.keys()))
 async def handle_place(message: Message):
     text = message.text
