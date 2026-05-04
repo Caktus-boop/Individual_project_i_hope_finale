@@ -353,7 +353,7 @@ async def sick_show(message: Message):
 
 @router.message(Command('force_random'))
 async def force_random(message: Message):
-    if str(message.from_user.id) not in ADMINS_IDS:
+    if str(message.from_user.id) not in ADMIN_IDS:
         await message.answer("У вас нет прав")
         return
     await random_place()
@@ -361,7 +361,7 @@ async def force_random(message: Message):
 
 @router.message(Command('force_clear'))
 async def force_clear(message: Message):
-    if str(message.from_user.id) not in ADMINS_IDS:
+    if str(message.from_user.id) not in ADMIN_IDS:
         await message.answer("У вас нет прав")
         return
     await clear_timetable()
