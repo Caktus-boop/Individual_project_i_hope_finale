@@ -351,7 +351,7 @@ async def sick_show(message: Message):
         names = "\n".join([f"• {u.name}" for u in users])
         await message.answer(f" <b>Список больных:</b>\n{names}", parse_mode="HTML")
 
-@router.message(Command('force_random')
+@router.message(Command('force_random'))
 async def force_random(message: Message):
     if str(message.from_user.id) not in ADMINS_IDS:
         await message.answer("У вас нет прав")
