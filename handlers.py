@@ -8,7 +8,7 @@ from utils import choose_place, create_timetable, create_table_separate_rows
 from database import Session
 from models import Users
 from sqlalchemy import select, update
-from bot import random_place, clear_timetable
+
 
 router = Router()
 
@@ -356,6 +356,7 @@ async def force_random(message: Message):
     if str(message.from_user.id) not in ADMIN_IDS:
         await message.answer("У вас нет прав")
         return
+    from bot import random_place
     await random_place()
     await message.answer("Распределение выполнено ✅")
 
@@ -364,6 +365,7 @@ async def force_clear(message: Message):
     if str(message.from_user.id) not in ADMIN_IDS:
         await message.answer("У вас нет прав")
         return
+    from bot import clear_timetable
     await clear_timetable()
     await message.answer("Таблица очищена ✅")
     
