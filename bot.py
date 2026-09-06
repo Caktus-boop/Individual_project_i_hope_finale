@@ -20,7 +20,8 @@ logging.basicConfig(level=logging.INFO)
 from sqlalchemy import text
 
 Base.metadata.create_all(engine)
-
+Base.metadata.drop_all(engine)
+Base.metadata.create_all(engine)
 from sqlalchemy import text
 
 with engine.connect() as conn:
@@ -213,5 +214,3 @@ async def on_startup():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
-Base.metadata.drop_all(engine)
-Base.metadata.create_all(engine)
