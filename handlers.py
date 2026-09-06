@@ -12,7 +12,7 @@ from sqlalchemy import select, update
 
 router = Router()
 
-ADMIN_IDS = {"1377739047", "263585469","1398362563"}  # Черников Денис, Захарова Олеся, Маришка
+ADMIN_IDS = {"1377739047", "1675113168","1398362563"}  # Черников Денис, Захарова Олеся, Маришка
 DENIS_ID = "1377739047"
 
 class AdminStates(StatesGroup):
