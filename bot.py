@@ -20,8 +20,7 @@ logging.basicConfig(level=logging.INFO)
 from sqlalchemy import text
 
 Base.metadata.create_all(engine)
-Base.metadata.drop_all(engine)
-Base.metadata.create_all(engine)
+
 from sqlalchemy import text
 
 with engine.connect() as conn:
