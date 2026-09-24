@@ -20,6 +20,13 @@ logging.basicConfig(level=logging.INFO)
 from sqlalchemy import text
 
 Base.metadata.create_all(engine)
+with Session() as session:
+    user = session.execute(
+        select(Users).where(Users.name == "Ивашов Артём")
+    ).scalar()
+    if user:
+        user.name = "Ивашов Александр"
+        session.commit()
 
 from sqlalchemy import text
 
