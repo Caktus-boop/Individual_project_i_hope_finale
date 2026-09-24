@@ -20,13 +20,6 @@ logging.basicConfig(level=logging.INFO)
 from sqlalchemy import text
 
 Base.metadata.create_all(engine)
-with Session() as session:
-    user = session.execute(
-        select(Users).where(Users.name == "Ивашов Артём")
-    ).scalar()
-    if user:
-        user.name = "Ивашов Александр"
-        session.commit()
 
 from sqlalchemy import text
 
@@ -70,7 +63,7 @@ def seed_students():
       ("5513999339", "Ариян Марина"),
       ("1675113168", "Семенов Алексей"),
       ("1367290236", "Гришина Настя"),
-      ("5140524385", "Ивашов Артём"),  
+      ("5140524385", "Ивашов Александр"),  
       ("6834662089", "Сахань Артём")
     ]
 
