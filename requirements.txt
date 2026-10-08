@@ -1,6 +1,7 @@
 aiogram
 sqlalchemy
 psycopg2-binary
+psycopg[binary]
 matplotlib
 fastapi
 uvicorn
