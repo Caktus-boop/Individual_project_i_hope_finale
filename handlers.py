@@ -105,7 +105,22 @@ async def find_student(message: Message):
             place = place_names.get(user.place_id, '')
             await message.answer(f"{name} дежурит: <b>{place}</b>", parse_mode="HTML")
 
-
+TEACHER_ID = "1398362563"  # Маришка
+@router.message(Command('send'))
+async def send_to_teacher(message: Message):
+    if str(message.from_user.id) not in ADMIN_IDS:
+        await message.answer("У вас нет прав")
+        return
+    
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        await message.answer("Введите сообщение: /send текст")
+        return
+    
+    text = args[1].strip()
+    await message.bot.send_message(TEACHER_ID, text)
+    await message.answer("Сообщение отправлено ✅")
+    
 @router.message(Command('lazy_asses'))
 async def lazy_asses(message: Message):
     if str(message.from_user.id) not in ADMIN_IDS:
